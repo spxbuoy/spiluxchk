@@ -70,7 +70,7 @@ SK:➺
 Loading...
 
 Checked By <a href="tg://user?id={message.from_user.id}"> {message.from_user.first_name}</a> 
-Bot by - <a href="tg://user?id=7679023904">Spilux</a>
+Bot by - <a href="tg://user?id=7447317982">tevixl</a>
         </b> """
     )
 
@@ -92,7 +92,7 @@ SK:➺
 Last Updated: {last_updated}
 
 Checked By <a href="tg://user?id={message.from_user.id}"> {message.from_user.first_name}</a> 
-Bot by - <a href="tg://user?id=7679023904">Spilux</a>
+Bot by - <a href="tg://user?id=7447317982">tevixl</a>
                     </b> """
             )
             refresh_count += 1

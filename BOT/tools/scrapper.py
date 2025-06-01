@@ -1,4 +1,5 @@
 import json
+import asyncio
 from pyrogram import Client, filters
 from FUNC.defs import *
 from FUNC.usersdb_func import *
@@ -7,13 +8,21 @@ from FUNC.scraperfunc import *
 
 
 with open("FILES/config.json", "r",encoding="utf-8") as f:
-    DATA     = json.load(f)
-    API_ID   = DATA["API_ID"]
-    API_HASH = DATA["API_HASH"]
+    DATA          = json.load(f)
+    API_ID        = DATA["API_ID"]
+    API_HASH      = DATA["API_HASH"]
+    SESSION_STRING = DATA.get("SESSION_STRING")
 
-user = Client("Scrapper",
-              api_id   = API_ID,
-              api_hash = API_HASH )
+# Initialize client with session string if available
+if SESSION_STRING and SESSION_STRING != "YOUR_SESSION_STRING_HERE":
+    user = Client("Scrapper",
+                  api_id=API_ID,
+                  api_hash=API_HASH,
+                  session_string=SESSION_STRING)
+else:
+    user = Client("Scrapper",
+                  api_id=API_ID,
+                  api_hash=API_HASH)
 
 
 
@@ -69,7 +78,7 @@ Type /buy For Paid Plan
             pass
 
         if "https" in channel_link:
-            check_link = await check_invite_link(user, channel_link)
+            check_link = await check_invite_link(user, channel_link, requested_by=message.from_user.id)
             if check_link == False:
                 resp = f"""<b>
 Wrong Invite Link ❌
@@ -82,7 +91,18 @@ Message: Your Provided Link is Wrong . Please Check Your Link and Try Again .
 
             channel_id    = check_link[1]
             channel_title = check_link[2]
+            newly_joined  = check_link[3] if len(check_link) > 3 else False
+            
+            # Perform scraping
             await cc_private_scrape(message, user, Client, channel_id, channel_title, limit, role)
+            
+            # Try to leave the channel if we just joined it for scraping
+            if newly_joined:
+                try:
+                    from FUNC.scraperfunc import leave_channel
+                    await leave_channel(user, channel_id)
+                except Exception as e:
+                    await error_log(f"Failed to leave channel after scraping: {str(e)}")
 
         else:
             resp = f"""<b>
@@ -153,7 +173,7 @@ Type /buy For Paid Plan
             pass
 
         if "https" in channel_link:
-            check_link = await check_invite_link(user, channel_link)
+            check_link = await check_invite_link(user, channel_link, requested_by=message.from_user.id)
             if check_link == False:
                 resp = f"""<b>
 Wrong Invite Link ❌
@@ -166,7 +186,18 @@ Message: Your Provided Link is Wrong . Please Check Your Link and Try Again .
 
             channel_id    = check_link[1]
             channel_title = check_link[2]
+            newly_joined  = check_link[3] if len(check_link) > 3 else False
+            
+            # Perform scraping
             await sk_private_scrape(message, user, Client, channel_id, channel_title, limit, role)
+            
+            # Try to leave the channel if we just joined it for scraping
+            if newly_joined:
+                try:
+                    from FUNC.scraperfunc import leave_channel
+                    await leave_channel(user, channel_id)
+                except Exception as e:
+                    await error_log(f"Failed to leave channel after scraping: {str(e)}")
         else:
             resp = f"""<b>
 Gate: SK Scraper ♻️
@@ -237,7 +268,7 @@ Type /buy For Paid Plan
             pass
 
         if "https" in channel_link:
-            check_link = await check_invite_link(user, channel_link)
+            check_link = await check_invite_link(user, channel_link, requested_by=message.from_user.id)
             if check_link == False:
                 resp = f"""<b>
 Wrong Invite Link ❌
@@ -250,6 +281,9 @@ Message: Your Provided Link is Wrong . Please Check Your Link and Try Again .
 
             channel_id    = check_link[1]
             channel_title = check_link[2]
+            newly_joined  = check_link[3] if len(check_link) > 3 else False
+            
+            # Perform scraping
             await bin_private_scrape(
                 message,
                 user,
@@ -260,6 +294,14 @@ Message: Your Provided Link is Wrong . Please Check Your Link and Try Again .
                 limit,
                 role,
             )
+            
+            # Try to leave the channel if we just joined it for scraping
+            if newly_joined:
+                try:
+                    from FUNC.scraperfunc import leave_channel
+                    await leave_channel(user, channel_id)
+                except Exception as e:
+                    await error_log(f"Failed to leave channel after scraping: {str(e)}")
         else:
             resp = f"""<b>
 Gate: CC Scraper ♻️
@@ -283,3 +325,7 @@ Status: Scraping...
     except:
         import traceback
         await error_log(traceback.format_exc())
+
+# Import admin commands
+from BOT.tools.admin_commands import *
+

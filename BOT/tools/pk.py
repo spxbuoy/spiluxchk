@@ -135,7 +135,7 @@ Pending Balance :➺ <code>{pending_balance}</code>
 ━━━━━━━━━━━━━━ 
 
 Checked By <a href="tg://user?id={message.from_user.id}">{message.from_user.first_name}</a> [ {role} ] 
-Bot by - <a href="tg://user?id=7679023904">tevixl〔 Ɠφ 〕</a>
+Bot by - <a href="tg://user?id=7447317982">tevixl〔 Ɠφ 〕</a>
 </b>"""
         await message.reply_text(resp, message.id)
 

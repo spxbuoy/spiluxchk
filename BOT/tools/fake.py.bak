@@ -587,22 +587,8 @@ def get_address_format(country_code: str) -> Dict:
     return formats[format_key]
 
 # Functions to generate regionally appropriate names
-def get_african_name(gender: str, country_code: str, preselected_ethnicity=None, return_ethnicity=False) -> Union[str, Tuple[str, str]]:
-    """
-    Generate culturally appropriate African names based on country and region.
-    
-    Args:
-        gender: Male or female identifier
-        country_code: Two-letter country code
-        preselected_ethnicity: Optional pre-selected ethnicity for consistent naming
-        return_ethnicity: If True, returns tuple of (name, ethnicity)
-        
-    Returns:
-        Either the name string or tuple of (name, ethnicity) if return_ethnicity=True
-    """
-    # Initialize variables to avoid UnboundLocalError
-    selected_ethnicity = 'generic'
-    first_name = None
+def get_african_name(gender: str, country_code: str) -> str:
+    """Generate culturally appropriate African names based on country and region."""
     # Common East African names (Kenya, Tanzania, Uganda)
     east_african_male_names = [
         "Adamu", "Baraka", "Chege", "David", "Emmanuel", "Francis", "George", "Hakim",
@@ -842,34 +828,18 @@ def get_african_name(gender: str, country_code: str, preselected_ethnicity=None,
         if country_code == 'ke':
             # Kenya - select from different ethnic groups
             ethnicities = ['ke_kikuyu', 'ke_luo', 'ke_kalenjin']
-            
-            # Use preselected ethnicity if valid, otherwise random
-            if preselected_ethnicity in ethnicities:
-                ethnicity = preselected_ethnicity
-            else:
-                ethnicity = random.choice(ethnicities)
-                
-            selected_ethnicity = ethnicity
-                
+            ethnicity = random.choice(ethnicities)
             if is_male:
                 first_name = random.choice(east_african_country_male_names[ethnicity])
             else:
                 first_name = random.choice(east_african_country_female_names[ethnicity])
-                
         elif country_code == 'et':
             # Ethiopia - select from different ethnic groups with appropriate distribution
             # Distribution roughly based on demographics: 
             # Amhara (~27%), Oromo (~34%), Tigray (~6%), other groups
             ethnicities = ['et_amhara', 'et_oromo', 'et_tigray', 'et_gurage', 'et']
-            
-            # Use preselected ethnicity if valid, otherwise weighted random
-            if preselected_ethnicity in ethnicities:
-                ethnicity = preselected_ethnicity
-            else:
-                weights = [27, 34, 6, 8, 25]  # Approximate population distribution
-                ethnicity = random.choices(ethnicities, weights=weights, k=1)[0]
-            
-            selected_ethnicity = ethnicity
+            weights = [27, 34, 6, 8, 25]  # Approximate population distribution
+            ethnicity = random.choices(ethnicities, weights=weights, k=1)[0]
             
             if is_male:
                 first_name = random.choice(east_african_country_male_names[ethnicity])
@@ -877,24 +847,18 @@ def get_african_name(gender: str, country_code: str, preselected_ethnicity=None,
                 first_name = random.choice(east_african_country_female_names[ethnicity])
         elif country_code in east_african_country_male_names:
             # Specific country in East Africa
-            selected_ethnicity = country_code
-            
             if is_male:
                 first_name = random.choice(east_african_country_male_names[country_code])
             else:
                 first_name = random.choice(east_african_country_female_names[country_code])
         elif country_code in ['rw', 'bi']:
             # Rwanda/Burundi share similar naming patterns
-            selected_ethnicity = 'rw_bi'
-            
             if is_male:
                 first_name = random.choice(east_african_country_male_names['rw_bi'])
             else:
                 first_name = random.choice(east_african_country_female_names['rw_bi'])
         else:
             # Generic East African
-            selected_ethnicity = 'east_africa_generic'
-            
             if is_male:
                 first_name = random.choice(east_african_country_male_names['generic'])
             else:
@@ -1014,18 +978,12 @@ def get_african_name(gender: str, country_code: str, preselected_ethnicity=None,
                     first_name = random.choice(east_african_female_names)
         else:
             # Fallback to generic African names
-            selected_ethnicity = 'africa_generic'
-            
             if is_male:
                 first_name = random.choice(east_african_male_names)
             else:
                 first_name = random.choice(east_african_female_names)
-    
-    # Return either just the name or a tuple with ethnicity info based on return_ethnicity parameter
-    if return_ethnicity:
-        return first_name, selected_ethnicity
-    else:
-        return first_name
+            
+    return first_name
 
 async def get_random_info_from_api(country_code: str) -> Optional[Dict]:
     """
@@ -1090,181 +1048,8 @@ async def get_random_info_from_api(country_code: str) -> Optional[Dict]:
         return None
     """
 
-def format_phone_number(phone: str, country_code: str, region: str = None) -> str:
-    """
-    Format phone number based on country with region-specific patterns.
-    
-    Args:
-        phone: The phone number to format
-        country_code: Two-letter country code
-        region: Optional region/state/province within the country for region-specific area codes
-    """
-    
-    # Country-region specific area codes 
-    # This is a comprehensive dictionary that maps countries to their internal regions and area codes
-    # This allows for globally consistent phone number generation with regional specificity
-    REGION_AREA_CODES = {
-        # Ethiopia
-        'et': {
-            'Addis Ababa': '11',
-            'Dire Dawa': '25',
-            'Amhara': '33',
-            'Oromia': '22',
-            'Tigray': '34',
-            'SNNPR': '46',
-            'Sidama': '47',
-            'Somali': '42',
-            'Afar': '33',
-            'Gambela': '45',
-            'Benishangul-Gumuz': '57',
-            'Harari': '25',
-        },
-        
-        # Kenya
-        'ke': {
-            'Nairobi': '020',
-            'Mombasa': '041',
-            'Kisumu': '057',
-            'Nakuru': '051',
-            'Eldoret': '053',
-            'Thika': '067',
-            'Kiambu': '066',
-            'Machakos': '044',
-            'Muranga': '060',
-            'Nyeri': '061',
-            'Garissa': '046',
-            'Kitale': '054',
-            'Kericho': '052',
-            'Kakamega': '056',
-            'Meru': '064',
-            'Naivasha': '050',
-            'Malindi': '042',
-            'Lamu': '042',
-            'Isiolo': '064',
-            'Voi': '043',
-        },
-        
-        # Nigeria
-        'ng': {
-            'Lagos': '01',
-            'Abuja': '09',
-            'Kano': '064',
-            'Port Harcourt': '084',
-            'Kaduna': '062',
-            'Ibadan': '02',
-            'Benin City': '052',
-            'Enugu': '042',
-            'Jos': '073',
-            'Calabar': '087',
-        },
-        
-        # South Africa
-        'za': {
-            'Cape Town': '021',
-            'Johannesburg': '011',
-            'Pretoria': '012',
-            'Durban': '031',
-            'Port Elizabeth': '041',
-            'Bloemfontein': '051',
-            'East London': '043',
-            'Kimberley': '053',
-            'Pietermaritzburg': '033',
-            'Polokwane': '015',
-        },
-        
-        # Ghana
-        'gh': {
-            'Accra': '030',
-            'Kumasi': '032',
-            'Sekondi-Takoradi': '031',
-            'Tamale': '037',
-            'Cape Coast': '033',
-            'Sunyani': '035',
-        },
-        
-        # United Kingdom
-        'gb': {
-            'London': '020',
-            'Birmingham': '0121',
-            'Manchester': '0161',
-            'Glasgow': '0141',
-            'Edinburgh': '0131',
-            'Liverpool': '0151',
-            'Leeds': '0113',
-            'Sheffield': '0114',
-            'Bristol': '0117',
-            'Cardiff': '029',
-            'Belfast': '028',
-            'Newcastle': '0191',
-            'Nottingham': '0115',
-        },
-        
-        # Germany
-        'de': {
-            'Berlin': '030',
-            'Hamburg': '040',
-            'Munich': '089',
-            'Cologne': '0221',
-            'Frankfurt': '069',
-            'Stuttgart': '0711',
-            'Düsseldorf': '0211',
-            'Dortmund': '0231',
-            'Essen': '0201',
-            'Leipzig': '0341',
-            'Bremen': '0421',
-            'Dresden': '0351',
-        },
-        
-        # France
-        'fr': {
-            'Paris': '01',
-            'Marseille': '04',
-            'Lyon': '04',
-            'Toulouse': '05',
-            'Nice': '04',
-            'Nantes': '02',
-            'Strasbourg': '03',
-            'Montpellier': '04',
-            'Bordeaux': '05',
-            'Lille': '03',
-            'Rennes': '02',
-            'Reims': '03',
-        },
-        
-        # Brazil
-        'br': {
-            'São Paulo': '11',
-            'Rio de Janeiro': '21',
-            'Brasília': '61',
-            'Salvador': '71',
-            'Fortaleza': '85',
-            'Belo Horizonte': '31',
-            'Manaus': '92',
-            'Curitiba': '41',
-            'Recife': '81',
-            'Porto Alegre': '51',
-            'Belém': '91',
-            'Goiânia': '62',
-        },
-        
-        # India
-        'in': {
-            'Mumbai': '022',
-            'Delhi': '011',
-            'Bangalore': '080',
-            'Hyderabad': '040',
-            'Chennai': '044',
-            'Kolkata': '033',
-            'Ahmedabad': '079',
-            'Pune': '020',
-            'Jaipur': '0141',
-            'Lucknow': '0522',
-            'Kanpur': '0512',
-            'Nagpur': '0712',
-        },
-        
-        # Add more countries and their regional area codes as needed
-    }
+def format_phone_number(phone: str, country_code: str) -> str:
+    """Format phone number based on country with region-specific patterns."""
     # Dictionary of country calling codes
     CALLING_CODES = {
         # North America
@@ -1342,32 +1127,24 @@ def format_phone_number(phone: str, country_code: str, region: str = None) -> st
         # Southeast Asia: +XX XX-XXXX-XXXX
         'SOUTHEAST_ASIA': lambda digits, code: f"+{code} {digits[:2]}-{digits[2:6]}-{digits[6:10]}",
         
-        # Universal format with regional codes
-        'UNIVERSAL': lambda digits, code, area_code=None:
-            f"+{code} {area_code or digits[:2]} {digits[2:5]} {digits[5:9]}",
-            
-        # African: +XXX XX XXX XXXX - Generic format
+        # African: +XXX XX XXX XXXX
         'AFRICA': lambda digits, code: f"+{code} {digits[:2]} {digits[2:5]} {digits[5:9]}",
     }
     
     # Region mapping for phone patterns - expanded with many more countries
-    # The UNIVERSAL pattern allows for region-specific area codes based on the city/region
-    # This approach provides more realistic, location-aware phone numbers that match
-    # the generated address data, creating higher quality fake data
     REGION_PHONE_PATTERN = {
         # North America
         'us': 'NORTH_AMERICA', 'ca': 'NORTH_AMERICA', 
         
-        # UK & Ireland - using universal format with regional area codes
-        'gb': 'UNIVERSAL', 'uk': 'UNIVERSAL', 'ie': 'UNIVERSAL',
+        # UK & Ireland
+        'gb': 'UK', 'uk': 'UK', 'ie': 'UK',
         
         # East Asia
         'jp': 'JAPAN', 'kr': 'JAPAN',
         'cn': 'CHINA', 'tw': 'CHINA', 'hk': 'CHINA', 'mo': 'CHINA',
         
         # South Asia
-        'in': 'UNIVERSAL',  # India using region-specific area codes
-        'pk': 'INDIA', 'bd': 'INDIA', 'np': 'INDIA', 'lk': 'INDIA',
+        'in': 'INDIA', 'pk': 'INDIA', 'bd': 'INDIA', 'np': 'INDIA', 'lk': 'INDIA',
         
         # Southeast Asia
         'my': 'SOUTHEAST_ASIA', 'id': 'SOUTHEAST_ASIA', 'sg': 'SOUTHEAST_ASIA', 
@@ -1378,18 +1155,11 @@ def format_phone_number(phone: str, country_code: str, region: str = None) -> st
         'au': 'AUSTRALIA', 'nz': 'AUSTRALIA',
         
         # Africa (with more specific country formats)
-        'za': 'AFRICA', 'ng': 'AFRICA', 'gh': 'AFRICA', 
+        'za': 'AFRICA', 'ng': 'AFRICA', 'ke': 'AFRICA', 'gh': 'AFRICA', 
         'eg': 'AFRICA', 'ma': 'AFRICA', 'dz': 'AFRICA', 'tz': 'AFRICA',
-        'ug': 'AFRICA', 'cm': 'AFRICA', 'ci': 'AFRICA',
+        'ug': 'AFRICA', 'et': 'AFRICA', 'cm': 'AFRICA', 'ci': 'AFRICA',
         'zw': 'AFRICA', 'zm': 'AFRICA', 'cd': 'AFRICA', 'sn': 'AFRICA',
         'rw': 'AFRICA', 'mg': 'AFRICA', 'mu': 'AFRICA',
-        
-        # Use universal format with regional area codes for all countries
-        'et': 'UNIVERSAL',  # Ethiopia
-        'ke': 'UNIVERSAL',  # Kenya
-        'ng': 'UNIVERSAL',  # Nigeria
-        'za': 'UNIVERSAL',  # South Africa
-        'gh': 'UNIVERSAL',  # Ghana
         
         # Middle East
         'sa': 'MIDDLE_EAST', 'ae': 'MIDDLE_EAST', 'qa': 'MIDDLE_EAST', 
@@ -1399,22 +1169,20 @@ def format_phone_number(phone: str, country_code: str, region: str = None) -> st
         'ye': 'MIDDLE_EAST', 'sy': 'MIDDLE_EAST',
         
         # Latin America
-        'mx': 'SOUTH_AMERICA', 'br': 'UNIVERSAL', 'ar': 'SOUTH_AMERICA',  # Brazil using region-specific area codes
+        'mx': 'SOUTH_AMERICA', 'br': 'SOUTH_AMERICA', 'ar': 'SOUTH_AMERICA',
         'co': 'SOUTH_AMERICA', 'pe': 'SOUTH_AMERICA', 'cl': 'SOUTH_AMERICA',
         've': 'SOUTH_AMERICA', 'ec': 'SOUTH_AMERICA', 'bo': 'SOUTH_AMERICA',
         'py': 'SOUTH_AMERICA', 'uy': 'SOUTH_AMERICA', 'gt': 'SOUTH_AMERICA',
         'cr': 'SOUTH_AMERICA', 'do': 'SOUTH_AMERICA', 'hn': 'SOUTH_AMERICA',
         'sv': 'SOUTH_AMERICA', 'ni': 'SOUTH_AMERICA', 'pa': 'SOUTH_AMERICA',
         
-        # Europe - major countries use UNIVERSAL format with regional area codes
-        'de': 'UNIVERSAL', 'fr': 'UNIVERSAL',  # Using region-specific area codes
-        # Other European countries - will migrate to UNIVERSAL as area codes are added
-        'it': 'EUROPE', 'es': 'EUROPE', 'nl': 'EUROPE', 'be': 'EUROPE', 
-        'ch': 'EUROPE', 'at': 'EUROPE', 'se': 'EUROPE', 'no': 'EUROPE', 
-        'dk': 'EUROPE', 'fi': 'EUROPE', 'pl': 'EUROPE', 'ru': 'EUROPE', 
-        'ua': 'EUROPE', 'ro': 'EUROPE', 'pt': 'EUROPE', 'gr': 'EUROPE', 
-        'cz': 'EUROPE', 'hu': 'EUROPE', 'bg': 'EUROPE', 'hr': 'EUROPE', 
-        'rs': 'EUROPE', 'sk': 'EUROPE',
+        # Europe - with more specific country formats for major European countries
+        'de': 'EUROPE', 'fr': 'EUROPE', 'it': 'EUROPE', 'es': 'EUROPE',
+        'nl': 'EUROPE', 'be': 'EUROPE', 'ch': 'EUROPE', 'at': 'EUROPE',
+        'se': 'EUROPE', 'no': 'EUROPE', 'dk': 'EUROPE', 'fi': 'EUROPE',
+        'pl': 'EUROPE', 'ru': 'EUROPE', 'ua': 'EUROPE', 'ro': 'EUROPE',
+        'pt': 'EUROPE', 'gr': 'EUROPE', 'cz': 'EUROPE', 'hu': 'EUROPE',
+        'bg': 'EUROPE', 'hr': 'EUROPE', 'rs': 'EUROPE', 'sk': 'EUROPE',
     }
     
     # Default region mappings
@@ -1483,30 +1251,6 @@ def format_phone_number(phone: str, country_code: str, region: str = None) -> st
                 clean_phone += str(random.randint(0, 9))
             clean_phone = clean_phone[:10]
             return PHONE_PATTERNS['NORTH_AMERICA'](clean_phone)
-            
-        elif pattern_key_safe == 'UNIVERSAL':
-            # Universal format with region-specific area codes for any country
-            while len(clean_phone) < 9:
-                clean_phone += str(random.randint(0, 9))
-            clean_phone = clean_phone[:9]
-            
-            # Use region-specific area code if region is provided and country has area code mappings
-            area_code = None
-            if region and country_code.lower() in REGION_AREA_CODES:
-                # Get the country's area code mappings
-                country_area_codes = REGION_AREA_CODES[country_code.lower()]
-                
-                # Try exact match first
-                if region in country_area_codes:
-                    area_code = country_area_codes[region]
-                else:
-                    # Try partial match (e.g., if region is "Nairobi County" and we have "Nairobi")
-                    for region_name, code in country_area_codes.items():
-                        if region_name in region or region in region_name:
-                            area_code = code
-                            break
-            
-            return PHONE_PATTERNS[pattern_key_safe](clean_phone, calling_code, area_code)
             
         elif pattern_key_safe in ['UK', 'JAPAN', 'CHINA', 'INDIA', 'AUSTRALIA']:
             # Special formatting for specific countries
@@ -1890,22 +1634,8 @@ async def cmd_fake(client, message):
                 elif country_code in ['ke', 'tz', 'ug', 'et', 'rw', 'bi', 'ng', 'gh', 'za', 'zm', 'zw', 'cm', 'cd', 
                                     'eg', 'ma', 'dz', 'tn', 'sd', 'ss', 'so', 'ci', 'ml', 'sn', 'mg', 'bj', 'gm',
                                     'bw', 'na', 'mz', 'ao', 'ls', 'sz']:
-                    # Enhanced African names with culturally appropriate patterns
-                    # Get ethnicity group before generating first name so we can match last name
-                    if country_code == 'et':
-                        # For Ethiopia, get the ethnicity first for matching
-                        ethnicities = ['et_amhara', 'et_oromo', 'et_tigray', 'et_gurage', 'et']
-                        weights = [27, 34, 6, 8, 25]  # Population distribution
-                        ethnicity = random.choices(ethnicities, weights=weights, k=1)[0]
-                        # Save ethnicity for later matching with last name
-                        selected_ethnicity = ethnicity
-                    else:
-                        selected_ethnicity = None
-                        
-                    # Get culturally appropriate first name with potential ethnicity info
-                    fake_first_name, name_ethnicity = get_african_name(fake_gender, country_code, 
-                                                                      preselected_ethnicity=selected_ethnicity,
-                                                                      return_ethnicity=True)
+                    # African names with culturally appropriate patterns
+                    fake_first_name = get_african_name(fake_gender, country_code)
                     
                     # East African last names
                     east_african_last_names = {
@@ -2383,198 +2113,11 @@ async def cmd_fake(client, message):
                     'nz': ["Auckland", "Wellington", "Christchurch", "Hamilton", "Tauranga", "Napier-Hastings", "Dunedin", "Palmerston North", "Nelson", "Rotorua"]
                 }
                 
-                # Create a mapping of cities to their regions for geographic consistency
-                city_to_region_map = {
-                    # USA - major cities mapped to their states
-                    'us': {
-                        "New York": "New York", 
-                        "Los Angeles": "California",
-                        "Chicago": "Illinois",
-                        "Houston": "Texas",
-                        "Phoenix": "Arizona",
-                        "Philadelphia": "Pennsylvania",
-                        "San Antonio": "Texas",
-                        "San Diego": "California",
-                        "Dallas": "Texas",
-                        "San Jose": "California",
-                        "Austin": "Texas",
-                        "Jacksonville": "Florida",
-                        "Fort Worth": "Texas",
-                        "Columbus": "Ohio",
-                        "San Francisco": "California",
-                        "Charlotte": "North Carolina",
-                        "Indianapolis": "Indiana",
-                        "Seattle": "Washington",
-                        "Denver": "Colorado",
-                        "Washington": "District of Columbia"
-                    },
-                    # UK - major cities mapped to their counties/regions
-                    'gb': {
-                        "London": "Greater London",
-                        "Birmingham": "West Midlands",
-                        "Manchester": "Greater Manchester",
-                        "Glasgow": "Scotland",
-                        "Newcastle": "Tyne and Wear",
-                        "Liverpool": "Merseyside",
-                        "Nottingham": "Nottinghamshire",
-                        "Sheffield": "South Yorkshire",
-                        "Bristol": "Bristol",
-                        "Belfast": "Northern Ireland",
-                        "Leicester": "Leicestershire",
-                        "Edinburgh": "Scotland",
-                        "Leeds": "West Yorkshire",
-                        "Cardiff": "Wales",
-                        "Coventry": "West Midlands"
-                    },
-                    # Nigeria - cities mapped to their states
-                    'ng': {
-                        "Lagos": "Lagos",
-                        "Kano": "Kano",
-                        "Ibadan": "Oyo",
-                        "Abuja": "Federal Capital Territory",
-                        "Port Harcourt": "Rivers",
-                        "Benin City": "Edo",
-                        "Kaduna": "Kaduna",
-                        "Zaria": "Kaduna",
-                        "Maiduguri": "Borno",
-                        "Jos": "Plateau"
-                    },
-                    # Kenya - each city mapped to its actual county
-                    'ke': {
-                        "Nairobi": "Nairobi",
-                        "Mombasa": "Mombasa",
-                        "Kisumu": "Kisumu",
-                        "Nakuru": "Nakuru",
-                        "Eldoret": "Uasin Gishu",
-                        "Nyeri": "Nyeri",
-                        "Thika": "Kiambu",
-                        "Malindi": "Kilifi",
-                        "Kitale": "Trans-Nzoia",
-                        "Garissa": "Garissa"
-                    },
-                    # Ethiopia - cities mapped to their regions
-                    'et': {
-                        "Addis Ababa": "Addis Ababa",
-                        "Dire Dawa": "Dire Dawa",
-                        "Mek'ele": "Tigray",
-                        "Gondar": "Amhara",
-                        "Adama": "Oromia",
-                        "Hawassa": "Sidama",
-                        "Bahir Dar": "Amhara",
-                        "Jimma": "Oromia",
-                        "Dessie": "Amhara",
-                        "Jijiga": "Somali",
-                        "Shashamane": "Oromia",
-                        "Bishoftu": "Oromia",
-                        "Harar": "Harari",
-                        "Debre Markos": "Amhara",
-                        "Sodo": "Southern Nations, Nationalities, and Peoples' Region",
-                        "Arba Minch": "Southern Nations, Nationalities, and Peoples' Region",
-                        "Hosaena": "Southern Nations, Nationalities, and Peoples' Region",
-                        "Nekemte": "Oromia",
-                        "Debre Birhan": "Amhara",
-                        "Asella": "Oromia"
-                    },
-                    # Tanzania - cities mapped to their regions
-                    'tz': {
-                        "Dar es Salaam": "Dar es Salaam",
-                        "Mwanza": "Mwanza",
-                        "Arusha": "Arusha",
-                        "Dodoma": "Dodoma",
-                        "Mbeya": "Mbeya",
-                        "Morogoro": "Morogoro",
-                        "Tanga": "Tanga",
-                        "Zanzibar": "Zanzibar",
-                        "Kigoma": "Kigoma",
-                        "Mtwara": "Mtwara"
-                    },
-                    # Uganda - cities mapped to their districts
-                    'ug': {
-                        "Kampala": "Kampala",
-                        "Gulu": "Gulu",
-                        "Lira": "Lira",
-                        "Mbarara": "Mbarara",
-                        "Jinja": "Jinja",
-                        "Mbale": "Mbale",
-                        "Masaka": "Masaka",
-                        "Entebbe": "Wakiso",
-                        "Kasese": "Kasese",
-                        "Soroti": "Soroti"
-                    },
-                    # India - major cities mapped to their states
-                    'in': {
-                        "Mumbai": "Maharashtra",
-                        "Delhi": "Delhi",
-                        "Bangalore": "Karnataka",
-                        "Hyderabad": "Telangana",
-                        "Chennai": "Tamil Nadu",
-                        "Kolkata": "West Bengal",
-                        "Ahmedabad": "Gujarat",
-                        "Pune": "Maharashtra",
-                        "Jaipur": "Rajasthan",
-                        "Lucknow": "Uttar Pradesh",
-                        "Kanpur": "Uttar Pradesh",
-                        "Nagpur": "Maharashtra",
-                        "Indore": "Madhya Pradesh",
-                        "Thane": "Maharashtra",
-                        "Bhopal": "Madhya Pradesh"
-                    },
-                    # South Africa - cities mapped to their provinces
-                    'za': {
-                        "Johannesburg": "Gauteng",
-                        "Cape Town": "Western Cape",
-                        "Durban": "KwaZulu-Natal",
-                        "Pretoria": "Gauteng",
-                        "Port Elizabeth": "Eastern Cape",
-                        "Bloemfontein": "Free State",
-                        "Nelspruit": "Mpumalanga",
-                        "Kimberley": "Northern Cape",
-                        "Polokwane": "Limpopo",
-                        "Pietermaritzburg": "KwaZulu-Natal"
-                    },
-                    # Brazil - major cities mapped to their states
-                    'br': {
-                        "São Paulo": "São Paulo",
-                        "Rio de Janeiro": "Rio de Janeiro",
-                        "Brasília": "Distrito Federal",
-                        "Salvador": "Bahia",
-                        "Fortaleza": "Ceará",
-                        "Belo Horizonte": "Minas Gerais",
-                        "Manaus": "Amazonas",
-                        "Curitiba": "Paraná",
-                        "Recife": "Pernambuco",
-                        "Porto Alegre": "Rio Grande do Sul"
-                    },
-                    # Australia - cities mapped to their states/territories
-                    'au': {
-                        "Sydney": "New South Wales",
-                        "Melbourne": "Victoria",
-                        "Brisbane": "Queensland",
-                        "Perth": "Western Australia",
-                        "Adelaide": "South Australia",
-                        "Gold Coast": "Queensland",
-                        "Newcastle": "New South Wales",
-                        "Canberra": "Australian Capital Territory",
-                        "Wollongong": "New South Wales",
-                        "Hobart": "Tasmania"
-                    }
-                }
-                
                 # If country has specific city list, use it, otherwise use Faker's city
                 if country_code in country_cities:
                     fake_city = random.choice(country_cities[country_code])
-                    
-                    # If we have region mapping for this country, set the region based on city
-                    if country_code in city_to_region_map and fake_city in city_to_region_map[country_code]:
-                        # Use the corresponding region for this city
-                        region_for_city = city_to_region_map[country_code][fake_city]
-                        # Save for later use when setting state/region
-                        city_region_match = region_for_city
-                    else:
-                        city_region_match = None
                 else:
                     fake_city = fake.city()
-                    city_region_match = None
                 
                 # Generate state/region name appropriate to the country
                 # Country-specific states/provinces/regions
@@ -2687,11 +2230,8 @@ async def cmd_fake(client, message):
                           "Guelmim-Oued Noun", "Laâyoune-Sakia El Hamra"]
                 }
                 
-                # First, check if we have a matched region from the city
-                if city_region_match:
-                    fake_state = city_region_match
-                # Otherwise, check if we have specific states/regions for this country
-                elif country_code in country_states:
+                # Check if we have specific states/regions for this country
+                if country_code in country_states:
                     fake_state = random.choice(country_states[country_code])
                 # Otherwise use Faker's built-in providers if available
                 elif hasattr(fake, 'state'):
@@ -2704,50 +2244,22 @@ async def cmd_fake(client, message):
                     fake_state = fake.administrative_unit()
                 # Use region-based fallbacks if no specific data is available
                 else:
-                    # For countries with known city-region mappings, try to use a suitable generic region
-                    if country_code in city_to_region_map and fake_city not in city_to_region_map[country_code]:
-                        # If we have region mappings but this city isn't in it, pick a region from the existing mappings
-                        # This ensures we use real administrative divisions even for unlisted cities
-                        regions = list(set(city_to_region_map[country_code].values()))
-                        if regions:
-                            fake_state = random.choice(regions)
-                            # Data quality note: This is a real region but may not be geographically accurate for this city
-                        else:
-                            # Generate a generic region if no valid regions available
-                            if country_code in COUNTRY_TO_REGION:
-                                region_name = COUNTRY_TO_REGION[country_code].split('_')[0].lower()
-                                if region_name == 'europe':
-                                    fake_state = random.choice(['Northern', 'Southern', 'Eastern', 'Western', 'Central']) + ' Region'
-                                elif region_name == 'asia':
-                                    fake_state = random.choice(['North', 'South', 'East', 'West', 'Central']) + ' Province'
-                                elif region_name == 'africa':
-                                    fake_state = random.choice(['Upper', 'Lower', 'Central', 'Eastern', 'Western']) + ' Region'
-                                elif region_name == 'americas':
-                                    fake_state = random.choice(['Northern', 'Southern', 'Eastern', 'Western', 'Central']) + ' District'
-                                elif region_name == 'oceania':
-                                    fake_state = random.choice(['Northern', 'Southern', 'Eastern', 'Western', 'Central']) + ' Territory'
-                                else:
-                                    fake_state = random.choice(['North', 'South', 'East', 'West', 'Central']) + ' Region'
-                            else:
-                                fake_state = random.choice(['Northern', 'Southern', 'Eastern', 'Western', 'Central']) + ' Region'
-                    else:
-                        # Generate a generic region
-                        if country_code in COUNTRY_TO_REGION:
-                            region_name = COUNTRY_TO_REGION[country_code].split('_')[0].lower()
-                            if region_name == 'europe':
-                                fake_state = random.choice(['Northern', 'Southern', 'Eastern', 'Western', 'Central']) + ' Region'
-                            elif region_name == 'asia':
-                                fake_state = random.choice(['North', 'South', 'East', 'West', 'Central']) + ' Province'
-                            elif region_name == 'africa':
-                                fake_state = random.choice(['Upper', 'Lower', 'Central', 'Eastern', 'Western']) + ' Region'
-                            elif region_name == 'americas':
-                                fake_state = random.choice(['Northern', 'Southern', 'Eastern', 'Western', 'Central']) + ' District'
-                            elif region_name == 'oceania':
-                                fake_state = random.choice(['Northern', 'Southern', 'Eastern', 'Western', 'Central']) + ' Territory'
-                            else:
-                                fake_state = random.choice(['North', 'South', 'East', 'West', 'Central']) + ' Region'
-                        else:
+                    if country_code in COUNTRY_TO_REGION:
+                        region_name = COUNTRY_TO_REGION[country_code].split('_')[0].lower()
+                        if region_name == 'europe':
                             fake_state = random.choice(['Northern', 'Southern', 'Eastern', 'Western', 'Central']) + ' Region'
+                        elif region_name == 'asia':
+                            fake_state = random.choice(['North', 'South', 'East', 'West', 'Central']) + ' Province'
+                        elif region_name == 'africa':
+                            fake_state = random.choice(['Upper', 'Lower', 'Central', 'Eastern', 'Western']) + ' Region'
+                        elif region_name == 'americas':
+                            fake_state = random.choice(['Northern', 'Southern', 'Eastern', 'Western', 'Central']) + ' District'
+                        elif region_name == 'oceania':
+                            fake_state = random.choice(['Northern', 'Southern', 'Eastern', 'Western', 'Central']) + ' Territory'
+                        else:
+                            fake_state = random.choice(['North', 'South', 'East', 'West', 'Central']) + ' Region'
+                    else:
+                        fake_state = random.choice(['Northern', 'Southern', 'Eastern', 'Western', 'Central']) + ' Region'
                 
                 # Use our enhanced postal code generator for more accurate regional formats
                 fake_postal = generate_postal_code(country_code)
@@ -2926,8 +2438,8 @@ async def cmd_fake(client, message):
                 # Use faker to generate a base phone number
                 fake_phone = fake.phone_number()
                 
-            # Format phone with country code and region for area code selection
-            fake_phone = format_phone_number(fake_phone, country_code, fake_state)
+            # Format phone with country code
+            fake_phone = format_phone_number(fake_phone, country_code)
             
             # Generate email
             if api_data and 'email' in api_data and not use_custom_generation:

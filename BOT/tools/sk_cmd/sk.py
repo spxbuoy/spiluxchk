@@ -182,7 +182,7 @@ More Info:
 {ipcountryresp}
 
 Checked By <a href="tg://user?id={message.from_user.id}"> {message.from_user.first_name}</a> 
-Bot by - <a href="tg://user?id=7679023904">tevixl 〔 Ɠφ 〕</a>
+Bot by - <a href="tg://user?id=7447317982">tevixl 〔 Ɠφ 〕</a>
             </b>"""
             await addsk(sk)
             await sendsk(resp, session)
@@ -221,7 +221,7 @@ More Info:
 {ipcountryresp}
 
 Checked By <a href="tg://user?id={message.from_user.id}"> {message.from_user.first_name}</a> 
-Bot by - <a href="tg://user?id=7679023904">tevixl〔 Ɠφ 〕</a>
+Bot by - <a href="tg://user?id=7447317982">tevixl〔 Ɠφ 〕</a>
 </b>"""
             await addsk(sk)
             await sendsk(resp, session)
@@ -248,7 +248,7 @@ Key : <code>{sk}</code>
 Response: EXPIRED KEY ❌
 
 Checked By <a href="tg://user?id={message.from_user.id}"> {message.from_user.first_name}</a> 
-Bot by - <a href="tg://user?id=7679023904">tevixl〔 Ɠφ 〕</a>
+Bot by - <a href="tg://user?id=7447317982">tevixl〔 Ɠφ 〕</a>
 </b>"""
             elif "active" in card_payments:
                 resp = f"""<b>
@@ -273,7 +273,7 @@ More Info:
 {ipcountryresp}
 
 Checked By <a href="tg://user?id={message.from_user.id}"> {message.from_user.first_name}</a> 
-Bot by - <a href="tg://user?id="7679023904">tevixl〔 Ɠφ 〕</a>
+Bot by - <a href="tg://user?id="7447317982">tevixl〔 Ɠφ 〕</a>
 </b>"""
                 await sendsk(resp, session)
 
@@ -292,7 +292,7 @@ Key : <code>{sk}</code>
 Response: INVALID KEY GIVEN ❌
 
 Checked By <a href="tg://user?id={message.from_user.id}"> {message.from_user.first_name}</a> 
-Bot by - <a href="tg://user?id=7679023904">tevixl 〔 Ɠφ 〕</a>
+Bot by - <a href="tg://user?id=7447317982">tevixl 〔 Ɠφ 〕</a>
 </b>"""
         elif "Expired API Key provided" in result:
             resp = f"""<b>
@@ -302,7 +302,7 @@ Key : <code>{sk}</code>
 Response: EXPIRED KEY ❌
 
 Checked By <a href="tg://user?id={message.from_user.id}"> {message.from_user.first_name}</a> 
-Bot by - <a href="tg://user?id=7679023904">tevixl〔 Ɠφ 〕</a>
+Bot by - <a href="tg://user?id=7447317982">tevixl〔 Ɠφ 〕</a>
 </b>"""
         elif "Your account cannot currently make live charges." in result:
             resp = f"""<b>
@@ -312,7 +312,7 @@ Key : <code>{sk}</code>
 Response: TESTMODE CHARGES ONLY ❌
 
 Checked By <a href="tg://user?id={message.from_user.id}"> {message.from_user.first_name}</a> 
-Bot by - <a href="tg://user?id=7679023904">tevixl〔 Ɠφ 〕</a>
+Bot by - <a href="tg://user?id=7447317982">tevixl〔 Ɠφ 〕</a>
 </b> """
         else:
             resp = f"""<b>
@@ -322,7 +322,7 @@ Key : <code>{sk}</code>
 Response: {result} ❌
 
 Checked By <a href="tg://user?id={message.from_user.id}"> {message.from_user.first_name}</a> 
-Bot by - <a href="tg://user?id=7679023904">tevixl〔 Ɠφ 〕</a>
+Bot by - <a href="tg://user?id=7447317982">tevixl〔 Ɠφ 〕</a>
 </b>"""
             with open("sk_resp.txt", "a", encoding="utf-8") as f:
                 f.write(sk + " " + result + "\n")
