@@ -35,7 +35,7 @@ Amount: {amt}\n</b>"""
 
         text += f"""
 <b>For Redeemtion 
-Type /redeem XCC-XXXX-XXXX-XXXX</b>"""
+Type /redeem SPX-XXXX-XXXX-XXXX</b>"""
 
         await message.reply_text(text, message.id)
 
