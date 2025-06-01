@@ -18,12 +18,18 @@ welcome_gif = [
 MESSAGE = """<b>
 🔥 LISTEN UP, {name} — 
 RULES ARE RULES. BREAK ‘EM, AND YOU’RE DONE. 🔥
-1.🚫 No fucking around with unwanted links. Keep that shit out.
+1.🚫 No fucking around with unwanted links.
+
 2.🚫 Spam? Hell no. One message at a time or you’re ghosted.
+
 3.🚫 No pimping your shit here. 
+
 4.🤐 Respect the squad or face the silence. 
+
 5.⚔️ Play smart. Play fair. Or get out. No second chances.
+
 6.🔥 Follow these or step the fuck out.
+
 ✅ Ready to roll? Hit /register and prove you belong.
 </b>"""
 
