@@ -3110,7 +3110,7 @@ async def cmd_fake(client, message):
             query_text = f"\n🔍 <b>Query:</b> <code>{country_query}</code>" if country_query else ""
             resp += f"""━━━━━━━━━━━━━━{query_text}
 <b>Generated For:</b> <a href="tg://user?id={message.from_user.id}">{message.from_user.first_name}</a> [ {role} ]
-<b>Bot by:</b> <a href="tg://user?id=7325746010">ªMkUsH</a>
+<b>Bot by:</b> <a href="tg://user?id=7325746010">@SpiluxX</a>
 """
             
             await message.reply_text(resp)
